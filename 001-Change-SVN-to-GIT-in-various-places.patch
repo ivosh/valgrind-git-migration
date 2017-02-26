@@ -1,0 +1,187 @@
+From 53ce7ab3aaf325f7eb2df1b38db5c110b61e9a20 Mon Sep 17 00:00:00 2001
+From: Ivo Raisr <ivosh@ivosh.net>
+Date: Sun, 26 Feb 2017 04:32:25 +0100
+Subject: [PATCH] Change SVN to GIT in various places and simple scripts.
+
+---
+ README                            |  4 ++--
+ README_DEVELOPERS_processes       | 27 ++-------------------------
+ auxprogs/change-copyright-year    |  6 +++---
+ configure.ac                      |  2 +-
+ docs/xml/manual-core-adv.xml      |  2 +-
+ docs/xml/manual-writing-tools.xml |  6 +++---
+ docs/xml/vg-entities.xml          |  2 +-
+ gdbserver_tests/README_DEVELOPERS |  2 +-
+ tests/check_headers_and_includes  |  3 +--
+ 9 files changed, 15 insertions(+), 39 deletions(-)
+
+diff --git a/README b/README
+index 45f2917d3..6959707d3 100644
+--- a/README
++++ b/README
+@@ -65,9 +65,9 @@ specified with --prefix= when building.
+ 
+ Building and installing it
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+-To install from the Subversion repository :
++To install from the GIT repository:
+ 
+-  0. Check out the code from SVN, following the instructions at
++  0. Clone the code from GIT, following the instructions at
+      http://www.valgrind.org/downloads/repository.html.
+ 
+   1. cd into the source directory.
+diff --git a/README_DEVELOPERS_processes b/README_DEVELOPERS_processes
+index c514277ae..7277c9cc3 100644
+--- a/README_DEVELOPERS_processes
++++ b/README_DEVELOPERS_processes
+@@ -12,8 +12,8 @@ more in details afterwards.
+ * Major release production: 
+   See docs/internals/release-HOWTO.txt (currently a bit out of date)
+ 
+-* Various guidelines/recommended usage for valgrind SVN
+-  See docs/internals/svn-HOWTO.txt
++* Various guidelines/recommended usage for valgrind GIT
++  See docs/internals/git-HOWTO.txt
+ 
+ * Minor/correction release production: TBD
+ 
+@@ -57,12 +57,6 @@ Update of the NEWS file.
+ 
+   Some special cases:
+   -------------------
+-  Some bugs or changes only touch the VEX SVN repository, so it is not
+-  possible to commit the NEWS change together with the code changes.
+-  In such a case, first commit the VEX change. Then just after, commit
+-  the NEWS change. In the bugzilla status, reference (at least) the Valgrind
+-  revision number.
+-
+   Some changes or bug fixes are very big and might be implemented over
+   a significant period. In such a case, update the NEWS as part of the
+   final commit.
+@@ -78,20 +72,3 @@ Update of the NEWS file.
+   fixed in the commit that fixed 307106.
+   Change also the status of the duplicated bug  in bugzilla,
+   indicating in the comment the commit revision that fixed the 'master bug'.
+-
+-
+-
+-Minor/correction release:
+-=========================
+-Describe here how to do changes and bug fixed in a minor (correction) release
+-and how/when to merge the branch to the trunk.
+-
+-Proposal to be discussed:
+-When a bug is fixed on the branch, the NEWS file is updated on the branch
+-(i.e. a 3.9.1 section is created if needed).
+-
+-When often to merge the branch to trunk ?
+-  after each fix ?
+-  just after the correction release is produced ?
+-
+-How is the branch merged to the trunk ?
+diff --git a/auxprogs/change-copyright-year b/auxprogs/change-copyright-year
+index bd8fdc594..9bd2cfaae 100755
+--- a/auxprogs/change-copyright-year
++++ b/auxprogs/change-copyright-year
+@@ -14,9 +14,9 @@
+ # Note that it will spit out some warnings when it runs;  ignore these.
+ #
+ 
+-# The find command deliberately skips .svn/ subdirs -- we don't want to
+-# change them.
+-for i in `find . -name '*.[chS]' -o -name '*.in' -type f -not -path '*.svn\/*'` ; do
++# The find command deliberately skips .git/ subdir -- we don't want to
++# change it.
++for i in `find . -name '*.[chS]' -o -name '*.in' -type f -not -path '*.git\/*'` ; do
+     echo $i
+     if [ -L $i ]; then continue; fi  # skip symbolic links
+     perl -p -e 's/Copyright \(C\) 20([0-1])([0-9])-2013/Copyright (C) 20$1$2-2015/' < $i > tmp.$$
+diff --git a/configure.ac b/configure.ac
+index 587917ba4..082195bf1 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -8,7 +8,7 @@
+ ##------------------------------------------------------------##
+ 
+ # Process this file with autoconf to produce a configure script.
+-AC_INIT([Valgrind],[3.13.0.SVN],[valgrind-users@lists.sourceforge.net])
++AC_INIT([Valgrind],[3.13.0.GIT],[valgrind-users@lists.sourceforge.net])
+ AC_CONFIG_SRCDIR(coregrind/m_main.c)
+ AC_CONFIG_HEADERS([config.h])
+ AM_INIT_AUTOMAKE([foreign subdir-objects])
+diff --git a/docs/xml/manual-core-adv.xml b/docs/xml/manual-core-adv.xml
+index 27c871af9..468b7f258 100644
+--- a/docs/xml/manual-core-adv.xml
++++ b/docs/xml/manual-core-adv.xml
+@@ -412,7 +412,7 @@ and indicates it is waiting for a connection from a GDB:</para>
+ <programlisting><![CDATA[
+ ==2418== Memcheck, a memory error detector
+ ==2418== Copyright (C) 2002-2010, and GNU GPL'd, by Julian Seward et al.
+-==2418== Using Valgrind-3.7.0.SVN and LibVEX; rerun with -h for copyright info
++==2418== Using Valgrind-3.13.0.GIT and LibVEX; rerun with -h for copyright info
+ ==2418== Command: ./prog
+ ==2418== 
+ ==2418== (action at startup) vgdb me ... 
+diff --git a/docs/xml/manual-writing-tools.xml b/docs/xml/manual-writing-tools.xml
+index 5ee037da1..87fceee89 100644
+--- a/docs/xml/manual-writing-tools.xml
++++ b/docs/xml/manual-writing-tools.xml
+@@ -155,11 +155,11 @@ top-level directory <computeroutput>valgrind/</computeroutput>.</para>
+    The output should be something like this:</para>
+ <programlisting><![CDATA[
+   ==738== foobar-0.0.1, a foobarring tool.
+-  ==738== Copyright (C) 2002-2009, and GNU GPL'd, by J. Programmer.
+-  ==738== Using Valgrind-3.5.0.SVN and LibVEX; rerun with -h for copyright info
++  ==738== Copyright (C) 2002-2017, and GNU GPL'd, by J. Programmer.
++  ==738== Using Valgrind-3.13.0.GIT and LibVEX; rerun with -h for copyright info
+   ==738== Command: date
+   ==738==
+-  Tue Nov 27 12:40:49 EST 2007
++  Tue Nov 27 12:40:49 EST 2017
+   ==738==]]></programlisting>
+ 
+    <para>The tool does nothing except run the program uninstrumented.</para>
+diff --git a/docs/xml/vg-entities.xml b/docs/xml/vg-entities.xml
+index ffddac043..f8552ce29 100644
+--- a/docs/xml/vg-entities.xml
++++ b/docs/xml/vg-entities.xml
+@@ -6,7 +6,7 @@
+ 
+ <!-- valgrind release + version stuff -->
+ <!ENTITY rel-type    "Release">
+-<!ENTITY rel-version "3.13.0.SVN">
++<!ENTITY rel-version "3.13.0.GIT">
+ <!ENTITY rel-date    "?? ??????? 2017">
+ 
+ <!-- where the docs are installed -->
+diff --git a/gdbserver_tests/README_DEVELOPERS b/gdbserver_tests/README_DEVELOPERS
+index 2f953b2d8..c570f3e53 100644
+--- a/gdbserver_tests/README_DEVELOPERS
++++ b/gdbserver_tests/README_DEVELOPERS
+@@ -52,7 +52,7 @@ Then file a bug in bugzilla, giving the following information:
+     gdbserver_tests/gdb --version
+     uname -a
+     cat /etc/issue
+-    valgrind --version (and/or svn version)
++    valgrind --version -v
+   and attach a tar file containing all the *.out and *.diff
+   files in gdbserver_tests directory
+ 
+diff --git a/tests/check_headers_and_includes b/tests/check_headers_and_includes
+index 47491b259..70c06d46f 100755
+--- a/tests/check_headers_and_includes
++++ b/tests/check_headers_and_includes
+@@ -58,8 +58,7 @@ my %tool_dirs = (
+ 
+ my %dirs_to_ignore = (
+     ".deps" => 1,
+-    ".svn" => 1,
+-    ".git" => 1,            # allow git mirrors of the svn repo
++    ".git" => 1,
+     ".in_place" => 1,
+     "Inst" => 1,            # the nightly scripts creates this
+     "VEX" => 1,
+-- 
+2.11.0
+

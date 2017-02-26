@@ -1,0 +1,38 @@
+From cd0b68362f9f3472f006381ef18463323ddd1215 Mon Sep 17 00:00:00 2001
+From: Ivo Raisr <ivosh@ivosh.net>
+Date: Sun, 26 Feb 2017 05:02:33 +0100
+Subject: [PATCH] Update auxprogs/update-demangler for Valgrind in GIT.
+
+---
+ auxprogs/update-demangler | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/auxprogs/update-demangler b/auxprogs/update-demangler
+index 18189b3b7..bca9ad871 100755
+--- a/auxprogs/update-demangler
++++ b/auxprogs/update-demangler
+@@ -86,10 +86,18 @@ cp    ../gcc-$new_gcc_revision/libiberty/d-demangle.c .
+ cp    ../gcc-$new_gcc_revision/libiberty/safe-ctype.c .
+ cd ..
+ 
+-# 5) Check out valgrind coregrind/m_demangle into old_m_demangle
++# 5) Sparse check out valgrind coregrind/m_demangle into old_m_demangle
+ echo "Checking out coregrind/m_demangle"
+-svn co svn://svn.valgrind.org/valgrind/trunk/coregrind/m_demangle old_m_demangle > /dev/null
+-rm -rf old_m_demangle/.svn
++mkdir valgrind-sparse-clone
++cd valgrind-sparse-clone
++git init
++git remote add origin -f git://sourceware.org/git/valgrind.git/
++git config core.sparsecheckout true
++echo "coregrind/m_demangle/*" > .git/info/sparse-checkout
++git pull origin master
++cd ..
++mv valgrind-sparse-clone/coregrind/m_demangle old_m_demangle
++rm -rf valgrind-sparse-clone
+ 
+ # 6) Create new_m_demangle
+ cp -rp old_m_demangle new_m_demangle
+-- 
+2.11.0
+

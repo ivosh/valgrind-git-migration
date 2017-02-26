@@ -88,7 +88,11 @@ sed -e 's|^/|/VEX/|' -e 's|^# /|# /VEX/|' VEX/.gitignore >> .gitignore
 git add .gitignore
 git commit -m 'Convert svn:ignore properties to combined .gitignore.'
 
-14. Push it!
+15. Add SVN->GIT patches
+git apply 001-Change-SVN-to-GIT-in-various-places.patch
+git apply 002-Update-auxprogs-update-demangler-for-Valgrind-in-GIT.patch
+
+16. Push it!
 git for-each-ref --format="%(refname)" "refs/original/" | xargs -n 1 git update-ref -d
 git reflog expire --expire=now --all
 git gc --prune=now
@@ -96,7 +100,7 @@ git remote add origin ssh://iraisr@sourceware.org/git/valgrind.git/
 git push origin --mirror
 cd ..
 
-15. Verify the same content for HEAD and all 3.x branches
+17. Verify the same content for HEAD and all 3.x branches
     (Valgrind 2.x did not have separate VEX subrepo):
 rm -rf valgrind-git-branches
 git clone ssh://iraisr@sourceware.org/git/valgrind.git/ valgrind-git-branches
