@@ -1,0 +1,318 @@
+From dc4646c38440347bafc4e47a6ee38c2221b2e72c Mon Sep 17 00:00:00 2001
+From: Ivo Raisr <ivosh@ivosh.net>
+Date: Sun, 26 Feb 2017 15:00:42 +0100
+Subject: [PATCH] Fix nightly build script to work with new Valgrind GIT
+ repository.
+
+---
+ nightly/README.txt  | 89 ++++++++++++++++++++++++++---------------------------
+ nightly/bin/nightly | 77 ++++++++++-----------------------------------
+ 2 files changed, 60 insertions(+), 106 deletions(-)
+
+diff --git a/nightly/README.txt b/nightly/README.txt
+index 4ab9d21da..85ad0636a 100644
+--- a/nightly/README.txt
++++ b/nightly/README.txt
+@@ -7,13 +7,13 @@ program.
+ 
+ BASIC OPERATIONS
+ ----------------
+-When run, the system checks out two trees:  the SVN trunk from 24 hours ago
+-and the SVN trunk from now.  ("24 hours ago" and "now" are determined when
++When run, the system clones and checks out two trees: one from 24 hours ago
++and the HEAD from now.  ("24 hours ago" and "now" are determined when
+ the script starts running, so if any commits happen while the tests are
+ running they will not be tested.)
+ 
+ If the two trees are different (i.e. there have been commits in the past 24
+-hours, either to the trunk or a branch) it builds ("make"), installs ("make
++hours, either to the master or a branch) it builds ("make"), installs ("make
+ install") and runs the regression tests ("make regtest") in both, and
+ compares the results.  Note that the "make install" isn't necessary in order
+ to run the tests because the regression tests use the code built (with
+@@ -31,24 +31,25 @@ SETTING UP
+ ----------
+ To set up nightly testing for a machine, do the following.
+ 
+-(1) Check out just this directory from the repository, eg:
++(1) Clone a shallow copy from the repository, eg:
+ 
+-        svn co svn://svn.valgrind.org/valgrind/trunk/nightly $DIR
++        git clone --depth 1 git://sourceware.org/git/valgrind.git/ $DIR
+ 
+     where $DIR is the name of the directory you want it to be in.
++    You'll probably want to include "nightly" in the directory name.
+     
+-    Note that this doesn't check out the whole Valgrind tree, just the
+-    directory containing the nightly testing stuff.  This is possible
+-    because the testing script doesn't check the code in the tree it belongs
+-    to; rather it checks out new trees (within $DIR) and tests them
+-    independently.
++    Note that this doesn't clone the whole repo history, just the latest
++    revision of everything in the repository. Under $DIR, only directory
++    "nightly" is of interest to us - the rest is ignored. In other words: the
++    testing script clones and checks out new trees (within $DIR/nightly) and
++    tests them independently.
+ 
+ (2) Choose a tag that identifies the test results.  This is usually the
+     machine name.  We'll call it $TAG in what follows.
+ 
+-(3) Create a configuration file $DIR/conf/$TAG.conf.  It is sourced by the
+-    'nightly' script, and can define any or all of the following environment
+-    variables.  (In most cases, only ABT_DETAILS is needed.)
++(3) Create a configuration file $DIR/nightly/conf/$TAG.conf. It is sourced
++    by the 'nightly' script, and can define any or all of the following
++    environment variables. (In most cases, only ABT_DETAILS is needed.)
+ 
+     - ABT_DETAILS: describes the machine in more detail, eg. the OS.  The
+       default is empty, but you should define it.  An example:
+@@ -99,12 +100,12 @@ To set up nightly testing for a machine, do the following.
+       (default value: --reps=3)
+ 
+     Note that the appropriate syntax to use in this file will depend on the
+-    shell from which the $DIR/bin/nightly script is run (which in turn may
+-    depend on what shell is used by cron or any similar program).
++    shell from which the $DIR/nightly/bin/nightly script is run (which in turn
++    may depend on what shell is used by cron or any similar program).
+ 
+-(4) Create a mailer script $DIR/conf/$TAG.sendmail.  It must be executable.
+-    It's used to send email results to the desired recipient (e.g. 
+-    valgrind-developers@lists.sourceforge.net)  It must handle three command
++(4) Create a mailer script $DIR/nightly/conf/$TAG.sendmail. It must be
++    executable. It's used to send email results to the desired recipient (e.g.
++    valgrind-developers@lists.sourceforge.net). It must handle three command
+     line arguments.
+ 
+     - The first argument is the email subject line.  It contains
+@@ -132,13 +133,13 @@ To set up nightly testing for a machine, do the following.
+ 
+ (5) To run the tests, execute:
+ 
+-       $DIR/bin/nightly $DIR $TAG
++       $DIR/nightly/bin/nightly $DIR/nightly $TAG
+ 
+     You probably want to put this command into a cron file or equivalent
+     so it is run regularly (preferably every night).  Actually, it's
+     probably better to put that command inside a script, and run the script
+-    from cron, rather than running $DIR/bin/nightly directly.  That way you
+-    can put any other configuration stuff that's necessary inside the
++    from cron, rather than running $DIR/nightly/bin/nightly directly. That way
++    you can put any other configuration stuff that's necessary inside the
+     script (e.g. make sure that programs used by the mailer script are in
+     your PATH).
+ 
+@@ -147,34 +148,34 @@ OUTPUT FILES
+ ------------
+ If the tests are run, the following files are produced:
+ 
+-- $DIR/old.verbose and $DIR/new.verbose contain full output of the whole
+-  process for each of the two trees.
++- $DIR/nightly/old.verbose and $DIR/nightly/new.verbose contain full output of
++  the whole process for each of the two trees.
+ 
+-- $DIR/old.short and $DIR/new.short contain summary output of the process
+-  for each of the two trees.  The diff between these two files goes in
+-  $DIR/diff.short.
++- $DIR/nightly/old.short and $DIR/nightly/new.short contain summary output of
++  the process for each of the two trees. The diff between these two files goes
++  in $DIR/nightly/diff.short.
+ 
+-- $DIR/final contains the overall summary, constructed from $DIR/old.short,
+-  $DIR/new.short, $DIR/diff.short and some other bits and pieces.  (The name
+-  of this file is what's passed as the second argument to
+-  $DIR/conf/$TAG.sendmail.)
++- $DIR/nighlty/final contains the overall summary, constructed from
++  $DIR/nightly/old.short, $DIR/nightly/new.short, $DIR/nightly/diff.short and
++  some other bits and pieces. (The name of this file is what's passed as the
++  second argument to $DIR/nightly/conf/$TAG.sendmail.)
+ 
+-- $DIR/diffs holds the diffs from all the failing tests in the newer tree,
+-  concatenated together;  the diff from each failure is truncated at 100
+-  lines to minimise possible size blow-outs.  (The name of this file is
+-  what's passed as the third argument to $DIR/conf/$TAG.sendmail.)  
++- $DIR/nightly/diffs holds the diffs from all the failing tests in the newer
++  tree, concatenated together; the diff from each failure is truncated at 100
++  lines to minimise possible size blow-outs. (The name of this file is
++  what's passed as the third argument to $DIR/nightly/conf/$TAG.sendmail.)
+ 
+-- $DIR/sendmail.log contains the output (stdout and stderr) from
+-  $DIR/conf/$TAG.sendmail goes in $DIR/sendmail.log.  
++- $DIR/nightly/sendmail.log contains the output (stdout and stderr) from
++  $DIR/nightly/conf/$TAG.sendmail goes in $DIR/nightly/sendmail.log.
+ 
+-- $DIR/valgrind-old/ and $DIR/valgrind-new/ contain the tested trees (and
+-  $DIR/valgrind-old/Inst/ and $DIR/valgrind-new/Inst/ contain the installed
+-  code).
++- $DIR/nightly/valgrind-old/ and $DIR/nightly/valgrind-new/ contain the tested
++  trees (and $DIR/nightly/valgrind-old/Inst/ and $DIR/nightly/valgrind-new/Inst/
++  contain the installed code).
+ 
+ If the tests aren't run, the following file is produced:
+ 
+-- $DIR/unchanged.log is created only if no tests were run because the two
+-  trees were identical.  It will contain a short explanatory message.
++- $DIR/nightly/unchanged.log is created only if no tests were run because the
++  two trees were identical. It will contain a short explanatory message.
+ 
+ Each time the tests are run, all files from previous runs are deleted.
+ 
+@@ -203,13 +204,11 @@ isn't easy.
+ MAINTENANCE
+ -----------
+ The scripts in the nightly/ directory occasionally get updated.  If that
+-happens, you can just "svn update" within $DIR to get the updated versions,
++happens, you can just "git pull" within $DIR to get the updated versions,
+ which will then be used the next time the tests run.  (It's possible that
+ the scripts will be changed in a way that requires changes to the files in
+-$DIR/conf/, but we try to avoid this.)
++$DIR/nightly/conf/, but we try to avoid this.)
+ 
+ If you want such updates to happen automatically, you could write a script
+ that does all the steps in SETTING UP above, and instead run that script
+ from cron.
+-
+-
+diff --git a/nightly/bin/nightly b/nightly/bin/nightly
+index e53eda089..75794f836 100755
+--- a/nightly/bin/nightly
++++ b/nightly/bin/nightly
+@@ -9,23 +9,6 @@
+ # Helper functions
+ #----------------------------------------------------------------------------
+ 
+-# Returns the revision number for the source files at date $1 in Subversion
+-# repo $2. Note: the "--depth" command line argument is supported from
+-# Subversion version 1.5 on.
+-get_svn_revision() {
+-  (
+-    cd $DIR
+-    rm -rf infodir
+-    if ! svn co -r "{$1}" --depth empty "$2" infodir > /dev/null 2>&1; then
+-      # Subversion 1.4 or before.
+-      rm -rf infodir
+-      svn co -r "{$1}" --non-recursive "$2" infodir > /dev/null
+-    fi
+-    svn info infodir | sed -n 's/^Revision: //p'
+-    rm -rf infodir
+-  )
+-}
+-
+ runcmd () {
+    logfile=$1
+    str=$2
+@@ -59,8 +42,7 @@ runcmd () {
+ # Startup
+ #----------------------------------------------------------------------------
+ 
+-valgrind_svn_repo="svn://svn.valgrind.org/valgrind/trunk"
+-vex_svn_repo="svn://svn.valgrind.org/vex/trunk"
++valgrind_git_repo="git://sourceware.org/git/valgrind.git/"
+ 
+ # Must have exactly two arguments
+ if [ $# -ne 2 ] ; then
+@@ -75,34 +57,11 @@ TAG=$2
+ # Get times and date
+ START=`date "+%F %H:%M:%S %Z"`
+ 
+-# This is one of the formats SVN accepts.  Yes, the 'T' appears in the final
+-# string, it's supposed to be like that.
+-svn_date_format="+%Y-%m-%dT%H:%M:%S"
+-
+-# The time-and-date from 24 hours ago is tricky;  Linux and Darwin have
+-# different ways of getting it, so we try things until something works.
+-svn_old_date=
+-if [ "z" = "z${svn_old_date}" ] ; then
+-    # Linux method.
+-    svn_old_date=`date --date=yesterday $svn_date_format 2> /dev/null`
+-fi
+-if [ "z" = "z${svn_old_date}" ] ; then
+-    # Darwin method.
+-    svn_old_date=`date -v-24H $svn_date_format 2> /dev/null`
+-fi
+-if [ "z" = "z${svn_old_date}" ] ; then
+-    echo "Sorry, can't work out the time and date for 24 hours ago, aborting"
+-    exit 1;
+-fi
+-
+-# The time-and-date for now is easy.
+-svn_new_date=`date $svn_date_format`
+-
+ cd $DIR
+ 
+ # Clean up output files produced by a previous run.
+ rm -rf diffs diffs.txt diff.short final new.short new.verbose old.short old.verbose
+-rm -rf sendmail.log unchanged.log valgrind-old valgrind-new
++rm -rf sendmail.log unchanged.log valgrind-repo valgrind-old valgrind-new
+ 
+ # Setup any relevant environment variables from conf/<tag>.conf.
+ . conf/$TAG.conf
+@@ -128,16 +87,16 @@ fi
+ # Check out, build, test
+ #----------------------------------------------------------------------------
+ 
+-vg_old_rev="`get_svn_revision ${svn_old_date} ${valgrind_svn_repo}`"
+-vg_new_rev="`get_svn_revision ${svn_new_date} ${valgrind_svn_repo}`"
+-vex_old_rev="`get_svn_revision ${svn_old_date} ${vex_svn_repo}`"
+-vex_new_rev="`get_svn_revision ${svn_new_date} ${vex_svn_repo}`"
+-if [ "${vg_old_rev}" = "${vg_new_rev}" -a "${vex_old_rev}" = "${vex_new_rev}" ]
+-then
+-  echo "Both {$svn_old_date} and {$svn_new_date} correspond to Valgrind r${vg_new_rev} / VEX r${vex_new_rev}"\
+-       "-- skipping nightly build." >unchanged.log
++# Clone the GIT repository first. We will query it and copy it afterwards.
++git clone --quiet git://sourceware.org/git/valgrind.git/ valgrind-repo
++
++cd valgrind-repo
++commits=$( git rev-list --after="24 hours ago" master )
++if [ -z "$commits" ]; then
++  echo "There are no new commits since yesterday -- skipping nightly build." > unchanged.log
+   exit 0
+ fi
++cd ..
+ 
+ # Do everything twice -- once for the 24 hours old Valgrind, and once 
+ # for the current one.
+@@ -150,18 +109,16 @@ for logfile in old new ; do
+ 
+    # Choose the current Valgrind, or one from 24 hours ago
+    if [ $logfile = "old" ] ; then
+-      svn_date=$svn_old_date
++      git_commit=$( echo $commits | awk '{print $NF}' )
+    else
+-      svn_date=$svn_new_date
++      git_commit="HEAD"
+    fi
+ 
+-   # Get dates for the old and new versions
+-
+    # Check out, build, run tests
+    runcmd $logfile \
+-          "Checking out valgrind source tree" \
+-          "svn co ${valgrind_svn_repo} -r {$svn_date} valgrind-$logfile\
+-           && svn update -r {$svn_date} valgrind-$logfile/VEX" && \
++          "Checking out Valgrind source tree" \
++          "cp -r --preserve=links valgrind-repo valgrind-$logfile\
++           && git checkout ${git_commit}" && \
+    \
+    runcmd $logfile \
+           "Configuring valgrind             " \
+@@ -219,8 +176,7 @@ fi
+ END=`date "+%F %H:%M:%S %Z"`
+ 
+ # Gather some information about this run and its environment
+-valgrind_revision="`svn info valgrind-new | grep Revision | sed 's/Revision[ ]*:[ ]*//'`"
+-vex_revision="`svn info valgrind-new/VEX | grep Revision | sed 's/Revision[ ]*:[ ]*//'`"
++valgrind_revision=$( ./valgrind-new/vg-in-place -v --version )
+ gcc_version="`gcc --version 2> /dev/null | head -1`"
+ gdb_version="`gdb --version 2> /dev/null | head -1`"
+ as_version="`as --version 2> /dev/null | head -1`"
+@@ -250,7 +206,6 @@ else
+ fi
+ 
+ echo "valgrind revision: $valgrind_revision" >  final
+-echo "VEX revision:      $vex_revision"      >> final
+ echo "C compiler:        $gcc_version"       >> final
+ echo "GDB:               $gdb_version"       >> final
+ echo "Assembler:         $as_version"        >> final
+-- 
+2.11.0
+
