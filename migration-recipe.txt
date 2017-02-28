@@ -1,43 +1,45 @@
 0. Switch SVN to readonly when doing the last final migration
 
-1. Init the Valgrind repo
-git svn init svn://svn.valgrind.org/valgrind --prefix='svn/' -s valgrind-svn-git
-
-2. Configure authors
-cd valgrind-svn-git
-git config svn.authorsfile ../authors.txt
-
-3. Fetch the stuff from Valgrind repo
-git svn fetch
-git svn show-ignore > .gitignore
-
-4. Fix tags and branches
-for t in $(git for-each-ref --format='%(refname:short)' refs/remotes/svn/tags); do git tag ${t/tags\//} $t && git branch -D -r $t; done
-for b in $(git for-each-ref --format='%(refname:short)' refs/remotes); do git branch $b refs/remotes/$b && git branch -D -r $b; done
-cd ..
-
-5. Init the VEX repo
+1. Init the VEX repo
 git svn init svn://svn.valgrind.org/vex --prefix='svn/' -s valgrind-vex-git
-
-6. Configure authors
 cd valgrind-vex-git
 git config svn.authorsfile ../authors.txt
 
-7. Fetch the stuff from VEX repo
+2. Fetch the stuff from VEX repo
 git svn fetch
 git svn show-ignore > .gitignore
 
-8. Fix tags and branches
+3. Fix tags and branches
 for t in $(git for-each-ref --format='%(refname:short)' refs/remotes/svn/tags); do git tag ${t/tags\//} $t && git branch -D -r $t; done
 for b in $(git for-each-ref --format='%(refname:short)' refs/remotes); do git branch $b refs/remotes/$b && git branch -D -r $b; done
 cd ..
 
-9. Copy the two repos together
+4. Due to a bug in git-svn (dumps core with SIGSEGV), the same approach for Valgrind repo
+   as for VEX is not possible. Use a slightly longer route with SVN dump/load:
+svnrdump dump svn://svn.valgrind.org/valgrind > valgrind-svn-repo.dump
+svnadmin create valgrind-svn-repo
+svnadmin load valgrind-svn-repo < valgrind-svn-repo.dump
+
+5. Init the Valgrind repo
+git svn init file:///$(pwd)/valgrind-svn-repo --prefix='svn/' -s valgrind-svn-git
+cd valgrind-svn-git
+git config svn.authorsfile ../authors.txt
+
+6. Fetch the stuff from Valgrind repo
+git svn fetch
+git svn show-ignore > .gitignore
+
+7. Fix tags and branches
+for t in $(git for-each-ref --format='%(refname:short)' refs/remotes/svn/tags); do git tag ${t/tags\//} $t && git branch -D -r $t; done
+for b in $(git for-each-ref --format='%(refname:short)' refs/remotes); do git branch $b refs/remotes/$b && git branch -D -r $b; done
+cd ..
+
+8. Copy the two repos together
 rm -rf valgrind-git-combined
 cp -r --preserve=links valgrind-svn-git valgrind-git-combined
 cp -r --preserve=links valgrind-vex-git valgrind-git-combined/VEX
 
-10. Delete non-production branches and tags
+9. Delete non-production branches and tags
 cd valgrind-git-combined
 git branch | grep -v master | egrep -v 'svn/VALGRIND_.*_BRANCH' | xargs git branch -D
 git tag | egrep -v 'svn/VALGRIND_.*_.$' | xargs git tag -d
@@ -45,7 +47,7 @@ cd VEX
 git branch | grep -v master | egrep -v 'svn/VEX_.*_BRANCH' | xargs git branch -D
 cd ..
 
-11. Rewrite the commit messages to get rid of extra junk after git-svn-id revision
+10. Rewrite the commit messages to get rid of extra junk after git-svn-id revision
 git filter-branch --msg-filter 'perl -ape "s/git-svn-id:\s+(\S+).*$/git-svn-id: \$1/"' \
     --tag-name-filter 'cat' -- --all
 cd VEX
@@ -53,7 +55,7 @@ git filter-branch --msg-filter 'perl -ape "s/git-svn-id:\s+(\S+).*$/git-svn-id: 
     --tag-name-filter 'cat' -- --all
 cd ..
 
-12. Fix the VEX history in all branches (issues warning for the first commit)
+11. Fix the VEX history in all branches (issues warning for the first commit)
 cd VEX
 cat << 'EOF' > doit.sh
 #!/bin/bash
@@ -65,7 +67,7 @@ git filter-branch -f --index-filter "$PWD/doit.sh" -- --all
 rm doit.sh
 cd ..
 
-13. Pull VEX repo into Valgrind one
+12. Pull VEX repo into Valgrind one
 git remote add vex VEX
 git fetch vex
 git merge --allow-unrelated-histories -m "Merge VEX/HEAD into Valgrind/HEAD" vex/master
@@ -83,18 +85,18 @@ git merge --allow-unrelated-histories -m "Merge VEX_3_8_BRANCH_BGQ into VALGRIND
 git remote rm vex
 git checkout master
 
-14. Combine .gitignore files together
+13. Combine .gitignore files together
 sed -e 's|^/|/VEX/|' -e 's|^# /|# /VEX/|' VEX/.gitignore >> .gitignore
 git add .gitignore
 git commit -m 'Convert svn:ignore properties to combined .gitignore.'
 
-15. Add SVN->GIT patches
-git am 001-Change-SVN-to-GIT-in-various-places.patch
-git am 002-Update-auxprogs-update-demangler-for-Valgrind-in-GIT.patch
-git am 003-Fix-nightly-build-script-to-work-with-git.patch
-git am 004-fix-verbose-version-reporting-for-git.patch
+14. Add SVN->GIT patches
+git am ../001-Change-SVN-to-GIT-in-various-places.patch
+git am ../002-Update-auxprogs-update-demangler-for-Valgrind-in-GIT.patch
+git am ../003-Fix-nightly-build-script-to-work-with-git.patch
+git am ../004-fix-verbose-version-reporting-for-git.patch
 
-16. Push it!
+15. Push it!
 git for-each-ref --format="%(refname)" "refs/original/" | xargs -n 1 git update-ref -d
 git reflog expire --expire=now --all
 git gc --prune=now
@@ -102,28 +104,29 @@ git remote add origin ssh://iraisr@sourceware.org/git/valgrind.git/
 git push origin --mirror
 cd ..
 
-17. Verify the same content for HEAD and all 3.x branches
+16. Verify the same content for HEAD and all 3.x branches
     (Valgrind 2.x did not have separate VEX subrepo):
 rm -rf valgrind-git-branches
-git clone ssh://iraisr@sourceware.org/git/valgrind.git/ valgrind-git-branches
+git clone git://sourceware.org/git/valgrind.git/ valgrind-git-branches
 echo "" > branches.diffs
 for ver in 0 1 2 3 4 5 6 7 8 9 10 11 12; do
-    branch="svn/VALGRIND_3_${ver}_BRANCH"
+    branch="VALGRIND_3_${ver}_BRANCH"
     echo "DIFFS for ${branch}:" >> branches.diffs
     cp -r --preserve=links valgrind-git-branches valgrind-git-3_${ver}_branch
     cd valgrind-git-3_${ver}_branch
-    git checkout ${branch}
+    git checkout svn/${branch}
     cd ..
     svn co svn://svn.valgrind.org/valgrind/branches/${branch} valgrind-svn-3_${ver}_branch
-    diff -ur valgrind-git-3_${ver}_branch valgrind-svn-3_${ver}_branch >> branches.diffs
+    diff -ur valgrind-svn-3_${ver}_branch valgrind-git-3_${ver}_branch >> branches.diffs
     rm -rf valgrind-svn-3_${ver}_branch valgrind-git-3_${ver}_branch
 done
 svn co svn://svn.valgrind.org/valgrind/trunk valgrind-svn-HEAD
 echo "DIFFS for HEAD:" >> branches.diffs
-diff -ur valgrind-git-branches valgrind-svn-HEAD >> branches.diffs
+diff -ur valgrind-svn-HEAD valgrind-git-branches >> branches.diffs
 rm -rf valgrind-git-branches valgrind-svn-HEAD
 cat branches.diffs
     
+
 
 Configure git repo afterwards:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
