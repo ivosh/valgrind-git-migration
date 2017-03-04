@@ -1,0 +1,161 @@
+Index: admin/updating.readme
+===================================================================
+--- admin/updating.readme	(revision 518)
++++ admin/updating.readme	(working copy)
+@@ -4,8 +4,8 @@
+ New Release ToDo 
+ -----------------------------------------------------------------------
+ 
+-# Check out a copy of valgrind:
+-de@phoenix:~/Programs$  svn co svn://svn.valgrind.org/valgrind/trunk valgrind
++# Clone a copy of valgrind:
++de@phoenix:~/Programs$  git clone git://sourceware.org/git/valgrind.git
+ de@phoenix:~/Programs$  cd valgrind/
+ /valgrind$  ./autogen.sh
+ /valgrind$  ./configure --prefix=`pwd`/Inst
+Index: downloads/repository.html
+===================================================================
+--- downloads/repository.html	(revision 518)
++++ downloads/repository.html	(working copy)
+@@ -7,34 +7,33 @@
+ leading edge of the development effort.  Such code may not work 
+ properly.</p>
+ 
+-<p>The actively developed, current (v3.0 and later) code is in a
+-<a href="http://subversion.tigris.org/">Subversion</a> (SVN) repository
+-at valgrind.org.<br />
++<p>The actively developed, current (v3.13 and later) code is in a
++<a href="https://git-scm.com/">git</a> repository at sourceware.org.<br />
+ </p>
+ 
+ <p>If you are doing any development work, please do it using the
+-code from the current repository at valgrind.org!</p>
++code from the current repository at sourceware.org!</p>
+ 
+ 
+ <div class="hr_brown"><hr/></div>
+ 
+-<h2>The Current (3.0 and later) Repository</h2>
++<h2>The Current (3.13 and later) Repository</h2>
+ 
+ <!--
+ <p>If you want to browse the current repository you can use the
+-<a href="http://svn.valgrind.org/">web interface</a>.</p>
++<a href="https://sourceware.org/git/?p=valgrind.git">web interface</a>.</p>
+ -->
+ 
+-<p>To check out code from the current repository (anonymous, read-only SVN
++<p>To clone code from the current repository (anonymous, read-only git
+ access), do this:</p>
+ 
+ <pre>
+-  svn co svn://svn.valgrind.org/valgrind/trunk valgrind
++  git clone git://sourceware.org/git/valgrind.git
+ </pre>
+ 
+ <p>
+-To build the checked out code, follow the instructions in the
+-<code>README</code> file that the checkout should give you.
++To build the cloned code, follow the instructions in the <code>README</code>
++file that the clone should give you.
+ Alternatively, the following should work:</p>
+ 
+ <pre>
+@@ -45,28 +44,6 @@
+   make install
+ </pre>
+ 
+-<p>To do the checkout, you'll need a Subversion client, version 1.1.0 or later.
+-Versions prior to 1.1.0 do not properly handle the symbolic links in our
+-tree.</p>
+-
+ <p>To do the build, you'll need automake version 1.10 or later
+ and a compatible version of autoconf (e.g. 2.68).
+ These should come as standard on any non-ancient Linux distribution.</p>
+-
+-<?php
+-/*
+-<p>
+-If you are behind a firewall that doesn't allow the svn protocol, you
+-can do an http checkout instead:
+-<pre>
+-  svn co --ignore-externals http://svn.valgrind.org/valgrind/trunk
+-  cd trunk
+-  svn propset svn:externals "VEX http://svn.valgrind.org/vex/trunk" 
+-  svn up
+-</pre>
+-Older versions of Subversion may not support the
+-<code>--ignore-externals</code> flag.
+-</p>
+-*/
+-?>
+-
+Index: help/contributing.html
+===================================================================
+--- help/contributing.html	(revision 518)
++++ help/contributing.html	(working copy)
+@@ -22,8 +22,9 @@
+ 
+ <h3>Hosting</h3>
+  <div style="float:right; margin-top:-1em;margin-right: 2em;"><img src="/images/mythic-logo.png" width="246" height="112" alt="Mythic Beasts" title="Mythic Beasts" border="0" /></div>
+- <div>Hosting for the Valgrind website and svn repo are very kindly donated by <a href="https://www.mythic-beasts.com/">Mythic Beasts</a>.</div>
++ <div>Hosting for the Valgrind website is very kindly donated by <a href="https://www.mythic-beasts.com/">Mythic Beasts</a>.</div>
+  <div>Visit the Mythic Beasts website at <a href="https://www.mythic-beasts.com/">www.mythic-beasts.com</a> for more information.</div>
++ <div>Hosting for the Valgrind repository is very kindly donated by <a href="https://sourceware.org/">sourceware.org</a>.</div>
+ <br clear="all"/>
+ 
+ <h3>Money</h3>
+Index: info/news.html
+===================================================================
+--- info/news.html	(revision 518)
++++ info/news.html	(working copy)
+@@ -7,6 +7,25 @@
+ <p>Below are a few of the important events in the history of Valgrind:</p>
+ 
+ <ul>
++ <li><p>?? March 2017:
++   Valgrind source code repository migrated from Subversion to git SCM.
++ </p></li>
++
++ <li><p>4 Februrary 2017:
++   Third <a href="https://fosdem.org/2017/schedule/track/valgrind/">Valgrind
++   devroom</a> at FOSDEM 2017, Brussels, Belgium.
++ </p></li>
++
++ <li><p>31 January 2015:
++   Second <a href="https://archive.fosdem.org/2015/schedule/track/valgrind/">Valgrind
++   devroom</a> at FOSDEM 2015, Brussels, Belgium.
++ </p></li>
++
++ <li><p>2 February 2014:
++   First <a href="https://archive.fosdem.org/2014/schedule/track/valgrind/">Valgrind
++   devroom</a> at FOSDEM 2014, Brussels, Belgium.
++ </p></li>
++
+  <li><p>21 October 2010: 
+    Valkyrie-2.0.0, a Qt4-based GUI for the Memcheck and Helgrind
+    tools in Valgrind-3.6.0, is now available.
+Index: support/bug_reports.html
+===================================================================
+--- support/bug_reports.html	(revision 518)
++++ support/bug_reports.html	(working copy)
+@@ -53,8 +53,8 @@
+ 
+  <li><strong>Version:</strong>  The version number is shown when Valgrind
+  starts up, on the "Using valgrind-$VERSION, a dynamic binary
+- instrumentation framework" line.  An "SVN"-suffixed version will only
+- appear if you are using code directly from the SVN repository.</li>
++ instrumentation framework" line.  A "GIT"-suffixed version will only
++ appear if you are using code directly from the git repository.</li>
+ 
+  <li><strong>Severity:</strong>  If Valgrind won't compile, choose "major".
+  If you are seeing a crash, choose "crash".  If your problem is minor,
+@@ -106,7 +106,7 @@
+ for an upcoming.  Note that we don't really use the "priority" field, so it
+ will usually be "NOR" (normal).</p>
+ 
+-<p>Once a bug is fixed in the SVN repository, it is changed to RESOLVED.  We
++<p>Once a bug is fixed in the git repository, it is changed to RESOLVED.  We
+ do not use the VERIFIED or CLOSED statuses.</p>
+ 
+ <p>Some bugs are fixed quickly, some take a long time to get fixed, some are
