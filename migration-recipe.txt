@@ -1,50 +1,55 @@
-I. Migrate the Valgrind code repository
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+I. Announce the migration
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-0. Announce the migration when doing the last final migration.
+1. Send email.
 
-1. Switch SVN to readonly when doing the last final migration.
+2. Switch SVN to readonly when doing the last final migration.
 
-2. Init the VEX repo
+
+II. Migrate the Valgrind code repository
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Init the VEX repo
 git svn init svn://svn.valgrind.org/vex --prefix='svn/' -s valgrind-vex-git
 cd valgrind-vex-git
 git config svn.authorsfile ../authors.txt
 
-3. Fetch the stuff from VEX repo
+2. Fetch the stuff from VEX repo
 git svn fetch
 git svn show-ignore > .gitignore
 
-4. Fix tags and branches
+3. Fix tags and branches
 for t in $(git for-each-ref --format='%(refname:short)' refs/remotes/svn/tags); do git tag ${t/tags\//} $t && git branch -D -r $t; done
 for b in $(git for-each-ref --format='%(refname:short)' refs/remotes); do git branch $b refs/remotes/$b && git branch -D -r $b; done
 cd ..
 
-5. Due to a bug in git-svn (dumps core with SIGSEGV), the same approach for Valgrind repo
+4. Due to a bug in git-svn (dumps core with SIGSEGV), the same approach for Valgrind repo
    as for VEX is not possible. Use a slightly longer route with SVN dump/load:
 svnrdump dump svn://svn.valgrind.org/valgrind > valgrind-svn-repo.dump
 svnadmin create valgrind-svn-repo
 svnadmin load valgrind-svn-repo < valgrind-svn-repo.dump
 
-6. Init the Valgrind repo
-git svn init file:///$(pwd)/valgrind-svn-repo --prefix='svn/' -s valgrind-svn-git
+5. Init the Valgrind repo
+git svn init file:///$(pwd)/valgrind-svn-repo --prefix='svn/' \
+    --rewrite-root='svn://svn.valgrind.org/valgrind' -s valgrind-svn-git
 cd valgrind-svn-git
 git config svn.authorsfile ../authors.txt
 
-7. Fetch the stuff from Valgrind repo
+6. Fetch the stuff from Valgrind repo
 git svn fetch
 git svn show-ignore > .gitignore
 
-8. Fix tags and branches
+7. Fix tags and branches
 for t in $(git for-each-ref --format='%(refname:short)' refs/remotes/svn/tags); do git tag ${t/tags\//} $t && git branch -D -r $t; done
 for b in $(git for-each-ref --format='%(refname:short)' refs/remotes); do git branch $b refs/remotes/$b && git branch -D -r $b; done
 cd ..
 
-9. Copy the two repos together
+8. Copy the two repos together
 rm -rf valgrind-git-combined
 cp -r --preserve=links valgrind-svn-git valgrind-git-combined
 cp -r --preserve=links valgrind-vex-git valgrind-git-combined/VEX
 
-10. Delete non-production branches and tags
+9. Delete non-production branches and tags
 cd valgrind-git-combined
 git branch | grep -v master | egrep -v 'svn/VALGRIND_.*_BRANCH' | xargs git branch -D
 git tag | egrep -v 'svn/VALGRIND_.*_.$' | xargs git tag -d
@@ -52,7 +57,7 @@ cd VEX
 git branch | grep -v master | egrep -v 'svn/VEX_.*_BRANCH' | xargs git branch -D
 cd ..
 
-11. Rewrite the commit messages to get rid of extra junk after git-svn-id revision
+10. Rewrite the commit messages to get rid of extra junk after git-svn-id revision
 git filter-branch --msg-filter 'perl -ape "s/git-svn-id:\s+(\S+).*$/git-svn-id: \$1/"' \
     --tag-name-filter 'cat' -- --all
 cd VEX
@@ -60,7 +65,7 @@ git filter-branch --msg-filter 'perl -ape "s/git-svn-id:\s+(\S+).*$/git-svn-id: 
     --tag-name-filter 'cat' -- --all
 cd ..
 
-12. Fix the VEX history in all branches (issues warning for the first commit)
+11. Fix the VEX history in all branches (issues warning for the first commit)
 cd VEX
 cat << 'EOF' > doit.sh
 #!/bin/bash
@@ -72,16 +77,20 @@ git filter-branch -f --index-filter "$PWD/doit.sh" -- --all
 rm doit.sh
 cd ..
 
-13. Pull VEX repo into Valgrind one
+12. Pull VEX repo into Valgrind one.
 git remote add vex VEX
 git fetch vex
 git merge --allow-unrelated-histories -m "Merge VEX/HEAD into Valgrind/HEAD" vex/master
+
+13. Move latest 3.x.y tags to the last commit on that branch.
+    Majority of branches have only 3.x.0 and 3.x.1 with the exception of 3.2.y.
 for ver in 0 1 2 3 4 5 6 7 8 9 10 11 12; do
     git checkout svn/VALGRIND_3_${ver}_BRANCH
     git merge --allow-unrelated-histories -m "Merge VEX_3_${ver}_BRANCH into VALGRIND_3_${ver}_BRANCH" \
         remotes/vex/svn/VEX_3_${ver}_BRANCH
-    git tag -f -a -m "Move tag VALGRIND_3_${ver}_0 to the latest commit on VALGRIND_3_${ver}_BRANCH" \
-        svn/VALGRIND_3_${ver}_0
+    latest_tag=$(git tag | grep VALGRIND_3_${ver}_ | sort -u | tail -1)
+    git tag -f -a -m "Move tag ${latest_tag} to the latest commit on VALGRIND_3_${ver}_BRANCH" \
+        $latest_tag
 done
 # Do BGQ branch separately
 git checkout svn/VALGRIND_3_8_BRANCH_BGQ
@@ -111,10 +120,13 @@ git remote add origin ssh://iraisr@sourceware.org/git/valgrind.git/
 git push origin --mirror
 cd ..
 
-17. Verify the same content for HEAD and all 3.x branches
+17. Verify the same content for HEAD, all 3.x branches and latest 3.x.y tags
     (Valgrind 2.x did not have separate VEX subrepo):
 rm -rf valgrind-git-branches
 git clone git://sourceware.org/git/valgrind.git/ valgrind-git-branches
+cd valgrind-git-branches
+git fetch --all --tags --prune
+cd ..
 echo "" > branches.diffs
 for ver in 0 1 2 3 4 5 6 7 8 9 10 11 12; do
     branch="VALGRIND_3_${ver}_BRANCH"
@@ -127,44 +139,39 @@ for ver in 0 1 2 3 4 5 6 7 8 9 10 11 12; do
     diff -ur valgrind-svn-3_${ver}_branch valgrind-git-3_${ver}_branch >> branches.diffs
     rm -rf valgrind-svn-3_${ver}_branch valgrind-git-3_${ver}_branch
 done
+
+echo "" > tags.diffs
+for tag in 3_0_1 3_1_1 3_2_3 3_3_1 3_4_1 3_5_0 3_6_1 3_7_0 3_8_1 3_9_0 3_10_1 3_11_0 3_12_0; do
+    tag="VALGRIND_${tag}"
+    echo "DIFFS for tag ${tag}:" >> tags.diffs
+    cp -r --preserve=links valgrind-git-branches valgrind-git-${tag}_tag
+    cd valgrind-git-${tag}_tag
+    git checkout svn/${tag} -b ${tag}_TAG
+    cd ..
+    svn co svn://svn.valgrind.org/valgrind/tags/${tag} valgrind-svn-${tag}_tag
+    diff -ur valgrind-svn-${tag}_tag valgrind-git-${tag}_tag >> tags.diffs
+    rm -rf valgrind-svn-${tag}_tag valgrind-git-${tag}_tag
+done
+
 svn co svn://svn.valgrind.org/valgrind/trunk valgrind-svn-HEAD
 echo "DIFFS for HEAD:" >> branches.diffs
 diff -ur valgrind-svn-HEAD valgrind-git-branches >> branches.diffs
 rm -rf valgrind-git-branches valgrind-svn-HEAD
-cat branches.diffs
-    
+cat branches.diffs tags.diffs
 
 
-II. Configure git repo afterwards:
+III. Configure git repo afterwards:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 1. Allow only fast-forward merges:
 git config receive.denynonfastforwards true
 
-2. Configure AdaCore git hooks [1] which are used at sourceware.org.
-
-----------------------------------
-[hooks]
-    from-domain = sourceware.org
-    mailinglist = valgrind-developers@lists.sourceforge.net
-
-    # Allow to include debugging output in commit messages.
-    max-rh-line-length = 0
-
-    # Forces to rebase changes before pushing to master and release branches.
-    reject-merge-commits = refs/heads/master, refs/heads/VALGRIND_.*
-
-    commit-url = "https://sourceware.org/git/?p=valgrind.git;h=%(rev)s"
-
-    # No emails from private user branches.
-    no-emails = /refs/heads/user/.*
-----------------------------------
-
+2. Configure AdaCore git hooks [1] which are used at sourceware.org
+according to git-hooks-config.txt in this directory.
 [1] https://sourceware.org/gdb/wiki/GitHooksUsersGuide
 
 
-
-III. Commit www changes:
+IV. Commit www changes:
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 1. Apply changes against valgrind-www repository:
@@ -173,9 +180,9 @@ patch -p0 -i ../valgrind-www-changes.patch
 svn commit -m "Changes for SVN->GIT core repository migration"
 
 
+V. Announce the migration completed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-IV. Announce the migration completed.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
@@ -193,3 +200,4 @@ git remote add origin ssh://iraisr@sourceware.org/git/valgrind.git/
 git push origin --mirror
 cd ..
 rm -rf empty
+
