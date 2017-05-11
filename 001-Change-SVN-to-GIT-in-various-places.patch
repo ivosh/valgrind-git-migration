@@ -1,6 +1,6 @@
-From 53ce7ab3aaf325f7eb2df1b38db5c110b61e9a20 Mon Sep 17 00:00:00 2001
-From: Ivo Raisr <ivosh@ivosh.net>
-Date: Sun, 26 Feb 2017 04:32:25 +0100
+From 5a5e33ad2a174dd87272e037a66fdf54ae48b115 Mon Sep 17 00:00:00 2001
+From: Ivosh Raisr <ivosh@ivosh.net>
+Date: Thu, 11 May 2017 17:03:50 +0200
 Subject: [PATCH] Change SVN to GIT in various places and simple scripts.
 
 ---
@@ -9,11 +9,11 @@ Subject: [PATCH] Change SVN to GIT in various places and simple scripts.
  auxprogs/change-copyright-year    |  6 +++---
  configure.ac                      |  2 +-
  docs/xml/manual-core-adv.xml      |  2 +-
- docs/xml/manual-writing-tools.xml |  6 +++---
+ docs/xml/manual-writing-tools.xml |  4 ++--
  docs/xml/vg-entities.xml          |  2 +-
  gdbserver_tests/README_DEVELOPERS |  2 +-
  tests/check_headers_and_includes  |  3 +--
- 9 files changed, 15 insertions(+), 39 deletions(-)
+ 9 files changed, 14 insertions(+), 38 deletions(-)
 
 diff --git a/README b/README
 index 45f2917d3..6959707d3 100644
@@ -81,7 +81,7 @@ index c514277ae..7277c9cc3 100644
 -
 -How is the branch merged to the trunk ?
 diff --git a/auxprogs/change-copyright-year b/auxprogs/change-copyright-year
-index bd8fdc594..9bd2cfaae 100755
+index 4e7f5c73b..eeeecd3ef 100755
 --- a/auxprogs/change-copyright-year
 +++ b/auxprogs/change-copyright-year
 @@ -14,9 +14,9 @@
@@ -96,9 +96,9 @@ index bd8fdc594..9bd2cfaae 100755
 +for i in `find . -name '*.[chS]' -o -name '*.in' -type f -not -path '*.git\/*'` ; do
      echo $i
      if [ -L $i ]; then continue; fi  # skip symbolic links
-     perl -p -e 's/Copyright \(C\) 20([0-1])([0-9])-2013/Copyright (C) 20$1$2-2015/' < $i > tmp.$$
+     perl -p -e 's/Copyright \(C\) 20([0-1])([0-9])-2015/Copyright (C) 20$1$2-2017/' < $i > tmp.$$
 diff --git a/configure.ac b/configure.ac
-index 587917ba4..082195bf1 100644
+index 810a76990..8d95375f2 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -8,7 +8,7 @@
@@ -111,29 +111,27 @@ index 587917ba4..082195bf1 100644
  AC_CONFIG_HEADERS([config.h])
  AM_INIT_AUTOMAKE([foreign subdir-objects])
 diff --git a/docs/xml/manual-core-adv.xml b/docs/xml/manual-core-adv.xml
-index 27c871af9..468b7f258 100644
+index d71b32483..1132101da 100644
 --- a/docs/xml/manual-core-adv.xml
 +++ b/docs/xml/manual-core-adv.xml
 @@ -412,7 +412,7 @@ and indicates it is waiting for a connection from a GDB:</para>
  <programlisting><![CDATA[
  ==2418== Memcheck, a memory error detector
- ==2418== Copyright (C) 2002-2010, and GNU GPL'd, by Julian Seward et al.
--==2418== Using Valgrind-3.7.0.SVN and LibVEX; rerun with -h for copyright info
+ ==2418== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+-==2418== Using Valgrind-3.13.0.SVN and LibVEX; rerun with -h for copyright info
 +==2418== Using Valgrind-3.13.0.GIT and LibVEX; rerun with -h for copyright info
  ==2418== Command: ./prog
  ==2418== 
  ==2418== (action at startup) vgdb me ... 
 diff --git a/docs/xml/manual-writing-tools.xml b/docs/xml/manual-writing-tools.xml
-index 5ee037da1..87fceee89 100644
+index 9f1761d21..87fceee89 100644
 --- a/docs/xml/manual-writing-tools.xml
 +++ b/docs/xml/manual-writing-tools.xml
-@@ -155,11 +155,11 @@ top-level directory <computeroutput>valgrind/</computeroutput>.</para>
-    The output should be something like this:</para>
+@@ -156,10 +156,10 @@ top-level directory <computeroutput>valgrind/</computeroutput>.</para>
  <programlisting><![CDATA[
    ==738== foobar-0.0.1, a foobarring tool.
--  ==738== Copyright (C) 2002-2009, and GNU GPL'd, by J. Programmer.
--  ==738== Using Valgrind-3.5.0.SVN and LibVEX; rerun with -h for copyright info
-+  ==738== Copyright (C) 2002-2017, and GNU GPL'd, by J. Programmer.
+   ==738== Copyright (C) 2002-2017, and GNU GPL'd, by J. Programmer.
+-  ==738== Using Valgrind-3.13.0.SVN and LibVEX; rerun with -h for copyright info
 +  ==738== Using Valgrind-3.13.0.GIT and LibVEX; rerun with -h for copyright info
    ==738== Command: date
    ==738==
