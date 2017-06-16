@@ -84,7 +84,7 @@ git merge --allow-unrelated-histories -m "Merge VEX/HEAD into Valgrind/HEAD" vex
 
 13. Move latest 3.x.y tags to the last commit on that branch.
     Majority of branches have only 3.x.0 and 3.x.1 with the exception of 3.2.y.
-for ver in 0 1 2 3 4 5 6 7 8 9 10 11 12; do
+for ver in 0 1 2 3 4 5 6 7 8 9 10 11 12 13; do
     git checkout svn/VALGRIND_3_${ver}_BRANCH
     git merge --allow-unrelated-histories -m "Merge VEX_3_${ver}_BRANCH into VALGRIND_3_${ver}_BRANCH" \
         remotes/vex/svn/VEX_3_${ver}_BRANCH
@@ -128,7 +128,7 @@ cd valgrind-git-branches
 git fetch --all --tags --prune
 cd ..
 echo "" > branches.diffs
-for ver in 0 1 2 3 4 5 6 7 8 9 10 11 12; do
+for ver in 0 1 2 3 4 5 6 7 8 9 10 11 12 13; do
     branch="VALGRIND_3_${ver}_BRANCH"
     echo "DIFFS for ${branch}:" >> branches.diffs
     cp -r --preserve=links valgrind-git-branches valgrind-git-3_${ver}_branch
@@ -141,7 +141,7 @@ for ver in 0 1 2 3 4 5 6 7 8 9 10 11 12; do
 done
 
 echo "" > tags.diffs
-for tag in 3_0_1 3_1_1 3_2_3 3_3_1 3_4_1 3_5_0 3_6_1 3_7_0 3_8_1 3_9_0 3_10_1 3_11_0 3_12_0; do
+for tag in 3_0_1 3_1_1 3_2_3 3_3_1 3_4_1 3_5_0 3_6_1 3_7_0 3_8_1 3_9_0 3_10_1 3_11_0 3_12_0 3_13_0; do
     tag="VALGRIND_${tag}"
     echo "DIFFS for tag ${tag}:" >> tags.diffs
     cp -r --preserve=links valgrind-git-branches valgrind-git-${tag}_tag
