@@ -17,7 +17,7 @@ index 9a3bee3d9..f72f66f81 100755
  #!/bin/sh
  
 -extract_svn_version()
-+extract_git_version()()
++extract_git_version()
  {
 -    if [ -d "$1"/.svn ]
 +    if [ -d "$1"/.git ]
