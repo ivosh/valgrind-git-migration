@@ -111,6 +111,7 @@ git am ../003-Fix-nightly-build-script-to-work-with-git.patch
 git am ../004-fix-verbose-version-reporting-for-git.patch
 git am ../005-Change-Subversion-to-GIT-in-various-places.patch
 git am ../006-Convert-release-HOWTO.txt-from-SVN-to-GIT.patch
+git am ../007-git-HOWTO.txt.patch
 
 16. Push it!
 git for-each-ref --format="%(refname)" "refs/original/" | xargs -n 1 git update-ref -d
