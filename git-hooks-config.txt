@@ -31,7 +31,7 @@
 
         # The style checker, applied to the contents of each file being
         # modified. TBD.
-        # style-checker = style_checker
+        style-checker = /git/valgrind.git/hooks-bin/style_checker
 
         # The URL where we can inspect the commit, inserted in the commit
         # notification email, and also copy sent to the file-commit-cmd.

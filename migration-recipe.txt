@@ -169,7 +169,30 @@ git config receive.denynonfastforwards true
 
 2. Configure AdaCore git hooks [1] which are used at sourceware.org
 according to git-hooks-config.txt in this directory.
+
+git clone ssh://iraisr@sourceware.org/git/valgrind.git/ valgrind-git
+cd valgrind-git
+git branch meta/config
+git checkout meta/config
+cp .../git-hooks-config.txt project.config
+git add project.config
+git commit -m "AdaCore git hooks configuration for Valgrind git repository"
+git push origin meta/config:refs/meta/config
+rm project.config
+git checkout master
+
 [1] https://sourceware.org/gdb/wiki/GitHooksUsersGuide
+
+3. Enable AdaCore git hooks.
+Create the following symlink for whole directory:
+/sourceware/git/valgrind.git/hooks -> /sourceware/projects/src-home/git-hooks/hooks
+
+Create an empty bash file:
+/git/valgrind.git/hooks-bin/style_checker
+
+This needs to be done by someone who has an account at sourceware.org,
+such as Mark Wielaard.
+
 
 
 IV. Commit www changes:
