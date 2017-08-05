@@ -1,5 +1,5 @@
 From cd0b68362f9f3472f006381ef18463323ddd1215 Mon Sep 17 00:00:00 2001
-From: Ivo Raisr <ivosh@ivosh.net>
+From: Ivosh Raisr <ivosh@ivosh.net>
 Date: Sun, 26 Feb 2017 05:02:33 +0100
 Subject: [PATCH] Update auxprogs/update-demangler for Valgrind in GIT.
 

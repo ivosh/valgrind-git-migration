@@ -104,24 +104,15 @@ sed -e 's|^/|/VEX/|' -e 's|^# /|# /VEX/|' VEX/.gitignore >> .gitignore
 git add .gitignore
 git commit -m 'Convert svn:ignore properties to combined .gitignore.'
 
-15. Add SVN->GIT patches
-git am ../001-Change-SVN-to-GIT-in-various-places.patch
-git am ../002-Update-auxprogs-update-demangler-for-Valgrind-in-GIT.patch
-git am ../003-Fix-nightly-build-script-to-work-with-git.patch
-git am ../004-fix-verbose-version-reporting-for-git.patch
-git am ../005-Change-Subversion-to-GIT-in-various-places.patch
-git am ../006-Convert-release-HOWTO.txt-from-SVN-to-GIT.patch
-git am ../007-git-HOWTO.txt.patch
-
-16. Push it!
+15. Push it!
 git for-each-ref --format="%(refname)" "refs/original/" | xargs -n 1 git update-ref -d
 git reflog expire --expire=now --all
-git gc --prune=now
+git gc --prune=now --aggressive
 git remote add origin ssh://iraisr@sourceware.org/git/valgrind.git/
 git push origin --mirror
 cd ..
 
-17. Verify the same content for HEAD, all 3.x branches and latest 3.x.y tags
+16. Verify the same content for HEAD, all 3.x branches and latest 3.x.y tags
     (Valgrind 2.x did not have separate VEX subrepo):
 rm -rf valgrind-git-branches
 git clone git://sourceware.org/git/valgrind.git/ valgrind-git-branches
@@ -160,6 +151,19 @@ diff -ur valgrind-svn-HEAD valgrind-git-branches >> branches.diffs
 rm -rf valgrind-git-branches valgrind-svn-HEAD
 cat branches.diffs tags.diffs
 
+17. Add SVN->GIT patches
+git clone ssh://iraisr@sourceware.org/git/valgrind.git/ valgrind-git
+cd valgrind-git
+git am ../001-Change-SVN-to-GIT-in-various-places.patch
+git am ../002-Update-auxprogs-update-demangler-for-Valgrind-in-GIT.patch
+git am ../003-Fix-nightly-build-script-to-work-with-git.patch
+git am ../004-fix-verbose-version-reporting-for-git.patch
+git am ../005-Change-Subversion-to-GIT-in-various-places.patch
+git am ../006-Convert-release-HOWTO.txt-from-SVN-to-GIT.patch
+git am ../007-git-HOWTO.txt.patch
+git push origin
+cd ..
+
 
 III. Configure git repo afterwards:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -170,7 +174,6 @@ git config receive.denynonfastforwards true
 2. Configure AdaCore git hooks [1] which are used at sourceware.org
 according to git-hooks-config.txt in this directory.
 
-git clone ssh://iraisr@sourceware.org/git/valgrind.git/ valgrind-git
 cd valgrind-git
 git branch meta/config
 git checkout meta/config
