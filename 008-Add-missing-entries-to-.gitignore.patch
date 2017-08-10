@@ -1,0 +1,45 @@
+From 27537ab734ef8c05c113de83b425939455fe834c Mon Sep 17 00:00:00 2001
+From: Ivo Raisr <ivosh@ivosh.net>
+Date: Wed, 9 Aug 2017 12:35:50 +0200
+Subject: [PATCH] Add missing entries to .gitignore.
+
+---
+ .gitignore | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/.gitignore b/.gitignore
+index d95039436..7c8bb8978 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,3 +1,4 @@
++*.o
+ 
+ # /
+ /.in_place
+@@ -290,6 +291,7 @@
+ 
+ # /drd/tests/
+ /drd/tests/*.dSYM
++/drd/tests/*.so
+ /drd/tests/*.stderr.diff*
+ /drd/tests/*.stderr.out
+ /drd/tests/*.stdout.diff*
+@@ -314,6 +316,7 @@
+ /drd/tests/circular_buffer
+ /drd/tests/concurrent_close
+ /drd/tests/custom_alloc
++/drd/tests/dlopen_lib.so
+ /drd/tests/dlopen_main
+ /drd/tests/drd_bitmap_test
+ /drd/tests/fp_race
+@@ -792,6 +795,7 @@
+ 
+ # /memcheck/tests/
+ /memcheck/tests/*.dSYM
++/memcheck/tests/*.so
+ /memcheck/tests/*.stderr.diff*
+ /memcheck/tests/*.stderr.out
+ /memcheck/tests/*.stdout.diff*
+-- 
+2.11.0
+

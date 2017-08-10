@@ -1,5 +1,5 @@
 From 266af29bdad6c962f64081d93028408110e18dcf Mon Sep 17 00:00:00 2001
-From: Ivosh Raisr <ivosh@ivosh.net>
+From: Ivo Raisr <ivosh@ivosh.net>
 Date: Fri, 16 Jun 2017 16:40:58 +0200
 Subject: [PATCH] Change SVN to GIT in various places and simple scripts.
 

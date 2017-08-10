@@ -1,5 +1,5 @@
 From 643ea297b04c682a0995477b0e9adc0d22d904a6 Mon Sep 17 00:00:00 2001
-From: Ivosh Raisr <ivosh@ivosh.net>
+From: Ivo Raisr <ivosh@ivosh.net>
 Date: Sat, 4 Mar 2017 22:21:33 +0100
 Subject: [PATCH] Convert release-HOWTO.txt from SVN to GIT
 

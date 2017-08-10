@@ -1,5 +1,5 @@
 From dc4646c38440347bafc4e47a6ee38c2221b2e72c Mon Sep 17 00:00:00 2001
-From: Ivosh Raisr <ivosh@ivosh.net>
+From: Ivo Raisr <ivosh@ivosh.net>
 Date: Sun, 26 Feb 2017 15:00:42 +0100
 Subject: [PATCH] Fix nightly build script to work with new Valgrind GIT
  repository.

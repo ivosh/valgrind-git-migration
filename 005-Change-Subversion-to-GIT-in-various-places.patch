@@ -1,5 +1,5 @@
 From f924696f88c8582af19347bd6d535e62065c6f73 Mon Sep 17 00:00:00 2001
-From: Ivosh Raisr <ivosh@ivosh.net>
+From: Ivo Raisr <ivosh@ivosh.net>
 Date: Sat, 4 Mar 2017 22:10:03 +0100
 Subject: [PATCH] Change Subversion to GIT in various places
 
